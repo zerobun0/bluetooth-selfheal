@@ -15,7 +15,7 @@ Fixes a Windows 11 bug where an Intel wireless Bluetooth radio randomly drops in
 
 1. Find your Bluetooth radio's device instance path: Device Manager, Bluetooth category, right click your adapter, Properties, Details tab, Device instance path.
 2. Open `selfheal.ps1` and `install.ps1`, set `$DeviceInstanceId` to that value if it is not an Intel AX210/AX211 (the default already matches that card).
-3. Run `install.ps1` as Administrator.
+3. Run `install.ps1`. It asks for admin rights itself with a normal UAC prompt, you do not need to open an elevated terminal by hand.
 4. Done. It runs itself from then on, no further action needed.
 
 Run `uninstall.ps1` as Administrator to remove the scheduled task and the installed files. It does not revert the Fast Startup or USB selective suspend settings, those are safe to leave on.

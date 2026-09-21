@@ -1,8 +1,10 @@
-# Run as Administrator, once.
-# Sets the two power settings that most commonly trigger this bug, installs the self heal
-# script, and registers a scheduled task that runs it automatically from then on.
+# Run this once, then forget about it. It asks for admin rights itself (a UAC prompt pops up),
+# you do not need to open an elevated terminal by hand.
 
-#Requires -RunAsAdministrator
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    exit
+}
 
 $DeviceInstanceId = "USB\VID_8087&PID_0032\8&F2CB6FA&0&13"
 $installDir = "C:\ProgramData\BluetoothSelfHeal"
@@ -47,13 +49,14 @@ Register-ScheduledTask -TaskName "BluetoothSelfHeal" `
     -Principal $principal `
     -Settings $settings `
     -Description "Auto-recovers the Bluetooth radio if it enters a Code 10 error state after sleep or logon." `
-    -Force | Out-Null
+    -Force -ErrorAction Stop | Out-Null
 
 Write-Output "Running it once to confirm it works..."
-Start-ScheduledTask -TaskName "BluetoothSelfHeal"
+Start-ScheduledTask -TaskName "BluetoothSelfHeal" -ErrorAction Stop
 Start-Sleep -Seconds 3
 $status = (Get-PnpDevice -InstanceId $DeviceInstanceId -ErrorAction SilentlyContinue).Status
 
 Write-Output ""
 Write-Output "Done. Device status: $status"
 Write-Output "Log file: $installDir\selfheal.log"
+Read-Host "Press Enter to close"
